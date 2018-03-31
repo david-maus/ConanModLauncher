@@ -1,7 +1,7 @@
 # **Conan Mod Launcher - beta**
 [GEF-GAMING.DE](http://www.gef-gaming.de)
 ---
-![alt text](https://i.imgur.com/lQZi3yx.png)
+![alt text](https://i.imgur.com/zihfeaN.png)
 
 
 ** ------Video & Pictured tutorial coming soon------**
@@ -61,8 +61,9 @@ Added later:
 3. Choose your Conan Game Directory
 4. Choose your new/empty Modfolder
 5. Input your SteamWorkshop Mod Collection URL
-5. Save your config
-6. Start the game
+6. Save your config
+7. Install/Update the mods
+8. Start the game
 
 ---
 
