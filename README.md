@@ -1,39 +1,55 @@
-# **Conan Server Manager - beta**
+# **Conan Mod Launcher - beta**
 [GEF-GAMING.DE](http://www.gef-gaming.de)
 ---
-![alt text](https://i.imgur.com/e6nOQfb.png)
+![alt text](https://i.imgur.com/lQZi3yx.png)
 
 
-*** ------Linux support coming soon / Video & Pictured tutorial coming soon------***
+** ------Video & Pictured tutorial coming soon------**
+
+
+
+**Perfect for modded community server**
+
+**Easy and automatic mod downloading and serverconnect for your users/players**
+
+"General" SteamWorkshop Subscription INDEPENDEND Mod Launcher for Conan Exiles.
 
 Very early and minimal build...
-
 More text is coming soon
 
 Added later:
 
-- Full config setting in the gui
-- maybe multiple server configurations
-- if rcon support is coming: query for online check and list of players etc.
-- restart value as time (maybe like: 13:30|01:30)
+- Presets for Collections
+- UI fixes
 
-Many features like from my Project Cars 2 Manager is maybe coming later:
-https://github.com/david-maus/PC2-ServerManager-GUI
+
+**See my ConanServerManager for automatic ServerSetup and Mod download/setup from your collection**
+[](https://github.com/david-maus/ConanServerManager)
 
 ---
 
 ## **Features**
+- Fully automatically load and activate mods from a steam mod collection
+ - Fully automatically load all Mods from a steam workshop mod collection in correct order
+ - Fully automatically write modlist.txt in correct collection order (from up to bottom)
 
-- Automatic install / update your ConanServer
-- Set your settings in a comfortable way
-- Start and Stop the Server in a comfortable way
-- Automatic Restart (And check/update before) every X minutes
+
+- On game launch you are directly connected to the server IF you set the ServerAdress in your ModCollection description
+ - In your mod collection you can write anywhere in the description: "CMLCONNECT: ip:port". The launcher will find the text and connects on launch to the server.
+
+
+ **Please see my own Collection and description here:**
+
+ [http://steamcommunity.com/sharedfiles/filedetails/?id=1314462790](http://steamcommunity.com/sharedfiles/filedetails/?id=1314462790)
+
+
+**You can test it with the collection url**
 
 ---
 
 ## **How to install**
 
-1. Download the Server Manager [here](https://github.com/david-maus/ConanServerManager/archive/master.zip)
+1. Download the Conan Mod Launcher [here](https://github.com/david-maus/ConanModLauncher/archive/master.zip)
 2. Extract it anywhere
 
 ---
@@ -41,11 +57,12 @@ https://github.com/david-maus/PC2-ServerManager-GUI
 ## **How to use**
 
 1. Start the Program
-2. Choose a Path to an empty Folder for your server
-3. Install / Update your server (steamcmd etc. is automaticly installed and needed)
-4. Input your settings
+2. Choose Folder to your Steam Root Directory
+3. Choose your Conan Game Directory
+4. Choose your new/empty Modfolder
+5. Input your SteamWorkshop Mod Collection URL
 5. Save your config
-6. Start your server
+6. Start the game
 
 ---
 
@@ -53,9 +70,8 @@ https://github.com/david-maus/PC2-ServerManager-GUI
 ## Known issues & Infos
 - There are very little errorchecks, so if you make something wrong there is maybe no errormessage
 - Of course it can happen that some things dont work. Please report it and i will fix it.
-- Linux support is coming soon
 - Feel free to edit the source, im not a python expert. The code is quite messy and repetetive.
 
 ## Repository
 
-[https://github.com/david-maus/ConanServerManager](https://github.com/david-maus/ConanServerManager)
+[https://github.com/david-maus/ConanModLauncher](https://github.com/david-maus/ConanModLauncher)
