@@ -114,10 +114,23 @@ class mainWindow(QtWidgets.QDialog):
 
         self.buttonStartGame.clicked.connect(self.startGame)
 
-        self.buttonInstallMods.clicked.connect(lambda: installMods())
+        self.buttonInstallMods.clicked.connect(self.installMods)
 
         # eventFilter
         self.headerLogo.installEventFilter(self)
+
+
+    def installMods(self):
+
+        if(modpath and collection):
+            if os.path.exists(modpath):
+                installMods()
+            else:
+                pass
+                # Modfolder exisitert nicht
+        else:
+            pass
+            # Modfolder Wert nicht ausgefüllt
 
 
 
@@ -150,29 +163,46 @@ class mainWindow(QtWidgets.QDialog):
 
 
     def startGame(self):
+        steamExeFile = os.path.join(steamPath, 'Steam.exe')
+        conanExeFile  = os.path.join(ConanPath, 'ConanSandbox.exe')
 
-        if('http' in collection):
-            collectionID = re.compile(r'(\d+)$').search(collection).group(1)
+        if(steamPath and ConanPath):
+            if os.path.exists(steamPath) and os.path.exists(conanExeFile):
+                if steamExeFile.is_file() and conanExeFile.is_file():
+                    if('http' in collection):
+                        collectionID = re.compile(r'(\d+)$').search(collection).group(1)
+                    else:
+                        collectionID = collection
+                    ServerAdress = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getConnectionInfo()
+
+                    if(':' in ServerAdress):
+                        connectParameter = ' +connect ' + ServerAdress
+                    else:
+                        connectParameter = ''
+
+                    steamExePath = os.path.join(steamPath, 'steam.exe')
+
+                    conanParameters = ' -applaunch 440900 -silent ' \
+                                      + connectParameter \
+                                      + ' ' \
+                                      + parameters
+
+                    print(steamExePath + conanParameters)
+                    self.StartGameThread_T = StartGameThread(steamExePath, conanParameters)
+
+                    self.StartGameThread_T.start()
+                else:
+                    pass
+                    # Steam und Conan nicht gefunden
+            else:
+                pass
+                # Pfade exisiterien nicht
         else:
-            collectionID = collection
-        ServerAdress = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getConnectionInfo()
+            pass
+            # Pfadwerte sind nicht ausgefüllt
 
-        if(':' in ServerAdress):
-            connectParameter = ' +connect ' + ServerAdress
-        else:
-            connectParameter = ''
 
-        steamExePath = os.path.join(steamPath, 'steam.exe')
 
-        conanParameters = ' -applaunch 440900 -silent ' \
-                          + connectParameter \
-                          + ' ' \
-                          + parameters
-
-        print(steamExePath + conanParameters)
-        self.StartGameThread_T = StartGameThread(steamExePath, conanParameters)
-
-        self.StartGameThread_T.start()
 
 
     def saveConfig(self):
