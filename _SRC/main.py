@@ -14,7 +14,7 @@ import os
 import sys
 from PyQt5 import uic, QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QInputDialog, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QWidget, QInputDialog, QLineEdit, QFileDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 from ui import resources
 from datetime import datetime, time
@@ -26,6 +26,7 @@ import pysteamcmd
 import pathlib
 import webbrowser
 import re
+from pathlib import Path
 import win32serviceutil
 from glob import glob
 from modules import design, functions, getSteamWorkshopMods
@@ -120,22 +121,34 @@ class mainWindow(QtWidgets.QDialog):
         self.headerLogo.installEventFilter(self)
 
 
+    def showErrorDialog(self, title, text):
+       msg = QtWidgets.QMessageBox()
+       msg.setIcon(QtWidgets.QMessageBox.Information)
+       msg.setText(text)
+       # msg.setInformativeText("This is additional information")
+       msg.setWindowTitle(title)
+       # msg.setDetailedText("The details are as follows:")
+       msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+
+       msg.exec_()
+
+
     def installMods(self):
 
         if(modpath and collection):
             if os.path.exists(modpath):
                 installMods()
             else:
-                pass
+                self.showErrorDialog('Path not found', 'Your Modfolder path was not found')
                 # Modfolder exisitert nicht
         else:
-            pass
+            self.showErrorDialog('Emtpy fields', 'You have not entered a modfolder or your collection URL')
             # Modfolder Wert nicht ausgefüllt
 
 
 
     def saveFileDialog(self):
-        my_dir = QFileDialog.getExistingDirectory(self, "Open a folder", ConanPath, QFileDialog.ShowDirsOnly)
+        my_dir = QFileDialog.getExistingDirectory(self, "Choose your Conan Root Folder", ConanPath, QFileDialog.ShowDirsOnly)
         if(my_dir == ''):
             my_dir = ConanPath
 
@@ -144,7 +157,7 @@ class mainWindow(QtWidgets.QDialog):
             self.saveConfig()
 
     def saveFileDialogMods(self):
-        my_dir = QFileDialog.getExistingDirectory(self, "Open a folder", ConanPath, QFileDialog.ShowDirsOnly)
+        my_dir = QFileDialog.getExistingDirectory(self, "Choose your Modfolder", ConanPath, QFileDialog.ShowDirsOnly)
         if(my_dir == ''):
             my_dir = modpath
 
@@ -153,7 +166,7 @@ class mainWindow(QtWidgets.QDialog):
             self.saveConfig()
 
     def saveFileDialogSteam(self):
-        my_dir = QFileDialog.getExistingDirectory(self, "Open a folder", ConanPath, QFileDialog.ShowDirsOnly)
+        my_dir = QFileDialog.getExistingDirectory(self, "Choose your Steam Root Folder", ConanPath, QFileDialog.ShowDirsOnly)
         if(my_dir == ''):
             my_dir = steamPath
 
@@ -168,7 +181,7 @@ class mainWindow(QtWidgets.QDialog):
 
         if(steamPath and ConanPath):
             if os.path.exists(steamPath) and os.path.exists(conanExeFile):
-                if steamExeFile.is_file() and conanExeFile.is_file():
+                if Path(steamExeFile).is_file() and Path(conanExeFile).is_file():
                     if('http' in collection):
                         collectionID = re.compile(r'(\d+)$').search(collection).group(1)
                     else:
@@ -192,13 +205,13 @@ class mainWindow(QtWidgets.QDialog):
 
                     self.StartGameThread_T.start()
                 else:
-                    pass
+                    self.showErrorDialog('Invalid Directories', 'It seems your steam or conanfolder is invalid (no steam.exe or conansandbox.exe found)')
                     # Steam und Conan nicht gefunden
             else:
-                pass
+                self.showErrorDialog('Path not found', 'Your steam or conan folder was not found')
                 # Pfade exisiterien nicht
         else:
-            pass
+            self.showErrorDialog('Emtpy fields', 'You have not entered your steam folder or your conan folder')
             # Pfadwerte sind nicht ausgefüllt
 
 
