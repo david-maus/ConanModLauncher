@@ -1,8 +1,9 @@
-# **Conan Mod Launcher - beta**
+# **Conan Mod Launcher**
 [GEF-GAMING.DE](http://www.gef-gaming.de)
 ---
-![alt text](https://i.imgur.com/zihfeaN.png)
+![alt text](https://i.imgur.com/gd8efir.png)
 
+![alt text](https://i.imgur.com/TYMUcSw.gif)
 
 ** ------Video & Pictured tutorial coming soon------**
 
