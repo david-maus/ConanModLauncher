@@ -50,8 +50,20 @@ class getSteamModsFromCollection(object):
 
         page = requests.get('http://steamcommunity.com/sharedfiles/filedetails/?id=' + self.CollectionID)
         tree = html.fromstring(page.content)
-        self.ServerAdress = tree.xpath('//*[contains(text(), "CMLCONNECT:")]/text()')
-        self.ServerAdress = ''.join(self.ServerAdress)
-        self.ServerAdress = self.ServerAdress.replace('CMLCONNECT: ', '')
-        self.ServerAdress = self.ServerAdress.strip()
+        try:
+            self.ServerAdress = tree.xpath('//*[contains(text(), "CMLCONNECT:")]/text()')
+            self.ServerAdress = ''.join(self.ServerAdress)
+            self.ServerAdress = self.ServerAdress.replace('CMLCONNECT: ', '')
+            self.ServerAdress = self.ServerAdress.strip()
+        except:
+            pass
         return self.ServerAdress
+
+
+    def getCollName(self):
+
+        page = requests.get('http://steamcommunity.com/sharedfiles/filedetails/?id=' + self.CollectionID)
+        tree = html.fromstring(page.content)
+        self.collName = tree.xpath('//div[@class="workshopItemDetailsHeader"]/div[@class="workshopItemTitle"]/text()')
+        self.collName = ''.join(self.collName)
+        return self.collName

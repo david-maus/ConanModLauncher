@@ -37,9 +37,9 @@ from modules import design, functions, getSteamWorkshopMods
 # ---------------------------------------------------------------------------------------
 
 __author__  = "David MAus"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __license__ = "MIT"
-__title__   = 'Conan Mod Launcher ' +  __version__ + ' - by GEF-GAMING.DE'
+__title__   = 'Conan Mod Launcher ' +  __version__ + ' - by GEF-GAMING.DE / David Maus'
 
 # ---------------------------------------------------------------------------------------
 # Configuration
@@ -105,46 +105,110 @@ class mainWindow(QtWidgets.QDialog):
         self.lineSteamPath.setText(steamPath)
         self.lineParamters.setText(parameters)
         self.lineCollection.setText(collection)
+        self.progressBar.setValue(0)
+        self.progressBar.setFormat('')
 
 
         # Button Mapping
         self.buttonPath.clicked.connect(self.saveFileDialog)
         self.buttonModPath.clicked.connect(self.saveFileDialogMods)
         self.buttonSteamPath.clicked.connect(self.saveFileDialogSteam)
-        self.buttonSave.clicked.connect(self.saveConfig)
-
         self.buttonStartGame.clicked.connect(self.startGame)
-
         self.buttonInstallMods.clicked.connect(self.installMods)
+        self.buttonCollectionCheck.clicked.connect(self.checkMods)
+
 
         # eventFilter
         self.headerLogo.installEventFilter(self)
 
 
     def showErrorDialog(self, title, text):
-       msg = QtWidgets.QMessageBox()
-       msg.setIcon(QtWidgets.QMessageBox.Information)
-       msg.setText(text)
-       # msg.setInformativeText("This is additional information")
-       msg.setWindowTitle(title)
-       # msg.setDetailedText("The details are as follows:")
-       msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
 
-       msg.exec_()
+        msg = QtWidgets.QMessageBox()
+        # msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText(text)
+        # msg.setInformativeText("This is additional information")
+        msg.setWindowTitle(title)
+        # msg.setDetailedText("The details are as follows:")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+
+        result = msg.exec_()
+        if result == QtWidgets.QMessageBox.Ok:
+            self.on_count_change(0)
+            self.on_count_changeStr('')
+            self.buttonPath.setEnabled(True)
+            self.buttonModPath.setEnabled(True)
+            self.buttonSteamPath.setEnabled(True)
+            self.buttonStartGame.setEnabled(True)
+            self.buttonInstallMods.setEnabled(True)
+            self.buttonCollectionCheck.setEnabled(True)
+
+    def checkMods(self):
+        self.on_count_change(0)
+        self.on_count_changeStr('Checking Collection... please wait')
+
+        self.saveConfig()
+        self.buttonPath.setEnabled(False)
+        self.buttonModPath.setEnabled(False)
+        self.buttonSteamPath.setEnabled(False)
+        self.buttonStartGame.setEnabled(False)
+        self.buttonInstallMods.setEnabled(False)
+        self.buttonCollectionCheck.setEnabled(False)
+        self.CheckCollectionThread_T = CheckCollectionThread()
+        self.CheckCollectionThread_T.finished.connect(lambda: self.showErrorDialog('ModCollection Info', msgMods))
+        self.CheckCollectionThread_T.start()
+
+
+
+
+
+    def closeEvent(self, event):
+        self.saveConfig()
+
 
 
     def installMods(self):
+        self.saveConfig()
+        conanExeFile  = os.path.join(ConanPath, 'ConanSandbox.exe')
+        if(modpath and collection and ConanPath):
+            if os.path.exists(modpath) and os.path.exists(ConanPath):
+                if Path(conanExeFile).is_file():
+                    self.on_count_change(0)
+                    self.installModsThread_T = installModsThread()
+                    self.installModsThread_T.percent_signal.connect(self.on_count_change)
+                    self.installModsThread_T.string_signal.connect(self.on_count_changeStr)
+                    self.installModsThread_T.finished.connect(self.thread_finished)
+                    self.installModsThread_T.start()
 
-        if(modpath and collection):
-            if os.path.exists(modpath):
-                installMods()
+                    self.buttonPath.setEnabled(False)
+                    self.buttonModPath.setEnabled(False)
+                    self.buttonSteamPath.setEnabled(False)
+                    self.buttonStartGame.setEnabled(False)
+                    self.buttonInstallMods.setEnabled(False)
+                    self.buttonCollectionCheck.setEnabled(False)
+                else:
+                    self.showErrorDialog('Invalid Directories', 'It seems your conanfolder is invalid (no conansandbox.exe found)')
             else:
-                self.showErrorDialog('Path not found', 'Your Modfolder path was not found')
+                self.showErrorDialog('Path not found', 'Your Modfolder or Conan path was not found')
                 # Modfolder exisitert nicht
         else:
-            self.showErrorDialog('Emtpy fields', 'You have not entered a modfolder or your collection URL')
+            self.showErrorDialog('Emtpy fields', 'You have not entered a modfolder or your collection URL or your ConanFolder')
             # Modfolder Wert nicht ausgefüllt
 
+    def on_count_change(self, value):
+        self.progressBar.setValue(value)
+
+    def on_count_changeStr(self, value):
+        self.progressBar.setFormat(value)
+
+
+    def thread_finished(self):
+        self.buttonPath.setEnabled(True)
+        self.buttonModPath.setEnabled(True)
+        self.buttonSteamPath.setEnabled(True)
+        self.buttonStartGame.setEnabled(True)
+        self.buttonInstallMods.setEnabled(True)
+        self.buttonCollectionCheck.setEnabled(True)
 
 
     def saveFileDialog(self):
@@ -176,6 +240,8 @@ class mainWindow(QtWidgets.QDialog):
 
 
     def startGame(self):
+        self.saveConfig()
+
         steamExeFile = os.path.join(steamPath, 'Steam.exe')
         conanExeFile  = os.path.join(ConanPath, 'ConanSandbox.exe')
 
@@ -186,13 +252,16 @@ class mainWindow(QtWidgets.QDialog):
                         collectionID = re.compile(r'(\d+)$').search(collection).group(1)
                     else:
                         collectionID = collection
+                    self.on_count_change(0)
+                    self.on_count_changeStr('Checking Collection for Serverinfo...')
                     ServerAdress = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getConnectionInfo()
 
                     if(':' in ServerAdress):
                         connectParameter = ' +connect ' + ServerAdress
+                        self.on_count_changeStr('Starting Game on ' + ServerAdress)
                     else:
                         connectParameter = ''
-
+                        self.on_count_changeStr('Starting Game...')
                     steamExePath = os.path.join(steamPath, 'steam.exe')
 
                     conanParameters = ' -applaunch 440900 -silent ' \
@@ -200,9 +269,8 @@ class mainWindow(QtWidgets.QDialog):
                                       + ' ' \
                                       + parameters
 
-                    print(steamExePath + conanParameters)
                     self.StartGameThread_T = StartGameThread(steamExePath, conanParameters)
-
+                    self.StartGameThread_T.finished.connect(lambda: self.on_count_changeStr(''))
                     self.StartGameThread_T.start()
                 else:
                     self.showErrorDialog('Invalid Directories', 'It seems your steam or conanfolder is invalid (no steam.exe or conansandbox.exe found)')
@@ -316,45 +384,69 @@ def writeSettings(ConanPathNEW, modpathNEW, steamPathNEW, parametersNEW, collect
     readSettings()
 
 
-def installMods():
-    steamcmd_path = os.path.join(modpath, '_steamcmd_')
-    gamepath = os.path.join(ConanPath)
+class installModsThread(QThread):
+    percent_signal = QtCore.pyqtSignal(int)
+    string_signal = QtCore.pyqtSignal(str)
+    def __init__(self):
+        QThread.__init__(self)
+        self.runs = True
 
-    pathlib.Path(modpath).mkdir(parents=False, exist_ok=True)
-    pathlib.Path(steamcmd_path).mkdir(parents=False, exist_ok=True)
+    def __del__(self):
+        self.wait()
 
-    steamcmd = pysteamcmd.Steamcmd(steamcmd_path)
-    steamcmd.install()
+    def stop(self):
+        self.runs = False
 
-    if('http' in collection):
-        collectionID = re.compile(r'(\d+)$').search(collection).group(1)
-    else:
-        collectionID = collection
-    steamModlist = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getCollectionInfo()
-    for mod in steamModlist:
-        modID = mod[0]
-        steamcmd.install_mods(gameid=440900, game_install_dir=modpath, user='anonymous', password=None, validate=True, modID=modID)
+    def run(self):
+        if self.runs:
+            self.string_signal.emit('Checking Collection... please wait')
+            steamcmd_path = os.path.join(modpath, '_steamcmd_')
+            gamepath = os.path.join(ConanPath)
 
-    modListFolder = os.path.join(gamepath, 'ConanSandbox', 'Mods')
-    modListTXT = os.path.join(modListFolder, 'modlist.txt')
-    modRootFolder = os.path.join(modpath, 'steamapps', 'workshop', 'content', '440900')
-    if os.path.exists(modListFolder):
-        if os.path.isfile(modListTXT):
-            pass
-        else:
-            open(modListTXT, "w+").close()
-    else:
-        os.mkdir(modListFolder)
-        open(modListTXT, "w+").close()
+            pathlib.Path(modpath).mkdir(parents=False, exist_ok=True)
+            pathlib.Path(steamcmd_path).mkdir(parents=False, exist_ok=True)
 
-    with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
-        for mod in steamModlist:
-            modItemFolder = os.path.join(modRootFolder, mod[0])
-            modFileName = os.listdir(modItemFolder)
-            modFileName = ''.join(modFileName)
-            modFullPath = os.path.join(modItemFolder, modFileName)
-            print(modFullPath)
-            modListTXTIO.write("*{}\n".format(modFullPath))
+            steamcmd = pysteamcmd.Steamcmd(steamcmd_path)
+            steamcmd.install()
+
+            if('http' in collection):
+                collectionID = re.compile(r'(\d+)$').search(collection).group(1)
+            else:
+                collectionID = collection
+            steamModlist = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getCollectionInfo()
+            modCount = len(steamModlist)
+            percent = 1 / modCount * 100
+            for idx, mod in enumerate(steamModlist):
+                modID = mod[0]
+                self.percent_signal.emit((idx) * percent)
+                self.string_signal.emit('Downloading / Updating Mod ' + str(idx + 1) + ' / ' + str(modCount) + ' - %p%')
+                steamcmd.install_mods(gameid=440900, game_install_dir=modpath, user='anonymous', password=None, validate=True, modID=modID)
+                if(idx + 1 == modCount):
+                    self.string_signal.emit('All Mods downloaded' + ' - %p%')
+                    self.percent_signal.emit(100)
+                else:
+                    pass
+
+
+            modListFolder = os.path.join(gamepath, 'ConanSandbox', 'Mods')
+            modListTXT = os.path.join(modListFolder, 'modlist.txt')
+            modRootFolder = os.path.join(modpath, 'steamapps', 'workshop', 'content', '440900')
+            if os.path.exists(modListFolder):
+                if os.path.isfile(modListTXT):
+                    pass
+                else:
+                    open(modListTXT, "w+").close()
+            else:
+                os.mkdir(modListFolder)
+                open(modListTXT, "w+").close()
+
+            with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
+                for mod in steamModlist:
+                    modItemFolder = os.path.join(modRootFolder, mod[0])
+                    modFileName = os.listdir(modItemFolder)
+                    modFileName = ''.join(modFileName)
+                    modFullPath = os.path.join(modItemFolder, modFileName)
+                    modListTXTIO.write("*{}\n".format(modFullPath))
 
 
 class StartGameThread(QThread):
@@ -375,7 +467,53 @@ class StartGameThread(QThread):
         if self.runs:
             steamExePath = str(self.steamExePath)
             conanParameters = str(self.conanParameters)
-            serverexec = subprocess.Popen(steamExePath + conanParameters)
+            serverexec = subprocess.Popen(steamExePath + conanParameters, close_fds=True)
+
+
+class CheckCollectionThread(QThread):
+
+    def __init__(self):
+        QThread.__init__(self)
+
+
+    def __del__(self):
+        self.wait()
+
+
+    def run(self):
+        if('http' in collection):
+            collectionID = re.compile(r'(\d+)$').search(collection).group(1)
+        else:
+            collectionID = collection
+
+        steamModlist = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getCollectionInfo()
+        CollName = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getCollName()
+        ServerAdress = getSteamWorkshopMods.getSteamModsFromCollection(collectionID).getConnectionInfo()
+        if(ServerAdress):
+            DirectConnect = 'Yes'
+        else:
+            DirectConnect = 'No'
+        modName = []
+        for idx, mod in enumerate(steamModlist):
+            mod = str(idx + 1).zfill(2)  + ': ' + mod[1]
+            modName.append(mod)
+        modName = '\n'.join(modName)
+        modCount = str(len(steamModlist))
+        global msgMods
+        msgMods = ("{} \n"
+                   "\n"
+                   "Modcount: {} \n"
+                   "Direct Connect: {}"
+                   "\n"
+                   "\n"
+                   "------ \n"
+                   "\n"
+                   "{} "
+                   "\n"
+                   "\n").format(CollName, modCount, DirectConnect, modName)
+
+        msgMods = msgMods.lstrip()
+
 
 
 def startWindow():
