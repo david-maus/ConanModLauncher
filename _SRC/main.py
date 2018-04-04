@@ -453,6 +453,7 @@ class installModsThread(QThread):
 
             self.string_signal.emit('Writing Modpaths to modlist.txt...')
             try:
+                os.chmod(modListFolder, stat.S_IWRITE)
                 os.chmod(modListTXT, stat.S_IWRITE)
                 with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
                     for mod in steamModlist:
@@ -462,8 +463,11 @@ class installModsThread(QThread):
                         modFullPath = os.path.join(modItemFolder, modFileName)
                         modListTXTIO.write("*{}\n".format(modFullPath))
                 self.string_signal.emit('Modsetup successful...')
-            except:
-                self.string_signal.emit('Could not write modpaths to modlist.txt...')
+            except Exception as e:
+                with open(os.path.join(currentRootFolder, 'data', 'log.txt'), 'w', encoding='utf8') as logIO:
+                    e = str(e)
+                    logIO.write(e)
+                self.string_signal.emit('Could not write modpaths to modlist.txt...check your data/log.txt file')
 
 
 class StartGameThread(QThread):
