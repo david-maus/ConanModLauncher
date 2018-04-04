@@ -37,7 +37,7 @@ from modules import design, functions, getSteamWorkshopMods
 # ---------------------------------------------------------------------------------------
 
 __author__  = "David MAus"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __license__ = "MIT"
 __title__   = 'Conan Mod Launcher ' +  __version__ + ' - by GEF-GAMING.DE / David Maus'
 
