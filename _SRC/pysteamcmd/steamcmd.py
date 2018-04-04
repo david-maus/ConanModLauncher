@@ -106,7 +106,7 @@ class Steamcmd(object):
         steamcmd_params = (
             self.steamcmd_exe,
             '+login {} {}'.format(user, password),
-            '+force_install_dir {}'.format(game_install_dir),
+            '+force_install_dir "{}"'.format(game_install_dir),
             '+app_update {}'.format(gameid),
             '{}'.format(validate),
             '+quit',
@@ -125,7 +125,7 @@ class Steamcmd(object):
         steamcmd_params = (
             self.steamcmd_exe,
             '+login {} {}'.format(user, password),
-            '+force_install_dir {}'.format(game_install_dir),
+            '+force_install_dir "{}"'.format(game_install_dir),
             '+workshop_download_item {} {}'.format(gameid, modID),
             '{}'.format(validate),
             '+quit',
