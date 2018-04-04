@@ -20,6 +20,7 @@ from ui import resources
 from datetime import datetime, time
 from time import sleep
 import psutil
+import stat
 import subprocess
 from configparser import ConfigParser
 import pysteamcmd
@@ -37,7 +38,7 @@ from modules import design, functions, getSteamWorkshopMods
 # ---------------------------------------------------------------------------------------
 
 __author__  = "David MAus"
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __license__ = "MIT"
 __title__   = 'Conan Mod Launcher ' +  __version__ + ' - by GEF-GAMING.DE / David Maus'
 
@@ -452,6 +453,7 @@ class installModsThread(QThread):
 
             self.string_signal.emit('Writing Modpaths to modlist.txt...')
             try:
+                os.chmod(modListTXT, stat.S_IWRITE)
                 with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
                     for mod in steamModlist:
                         modItemFolder = os.path.join(modRootFolder, mod[0])
