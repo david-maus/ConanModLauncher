@@ -435,18 +435,33 @@ class installModsThread(QThread):
                 if os.path.isfile(modListTXT):
                     pass
                 else:
-                    open(modListTXT, "w+").close()
+                    self.string_signal.emit('modlist.txt not found, creating it...')
+                    try:
+                        open(modListTXT, "w").close()
+                        self.string_signal.emit('modlist.txt creation successful...')
+                    except:
+                        self.string_signal.emit('modlist.txt could not be created...')
             else:
-                os.mkdir(modListFolder)
-                open(modListTXT, "w+").close()
+                self.string_signal.emit('Modfolder and modlist.txt not found, creating it...')
+                try:
+                    os.mkdir(modListFolder)
+                    open(modListTXT, "w").close()
+                    self.string_signal.emit('Modfolder and modlist.txt creation successful...')
+                except:
+                    self.string_signal.emit('Modfolder and modlist.txt could not be created...')
 
-            with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
-                for mod in steamModlist:
-                    modItemFolder = os.path.join(modRootFolder, mod[0])
-                    modFileName = os.listdir(modItemFolder)
-                    modFileName = ''.join(modFileName)
-                    modFullPath = os.path.join(modItemFolder, modFileName)
-                    modListTXTIO.write("*{}\n".format(modFullPath))
+            self.string_signal.emit('Writing Modpaths to modlist.txt...')
+            try:
+                with open(modListTXT, 'w', encoding='utf8') as modListTXTIO:
+                    for mod in steamModlist:
+                        modItemFolder = os.path.join(modRootFolder, mod[0])
+                        modFileName = os.listdir(modItemFolder)
+                        modFileName = ''.join(modFileName)
+                        modFullPath = os.path.join(modItemFolder, modFileName)
+                        modListTXTIO.write("*{}\n".format(modFullPath))
+                self.string_signal.emit('Modsetup successful...')
+            except:
+                self.string_signal.emit('Could not write modpaths to modlist.txt...')
 
 
 class StartGameThread(QThread):
